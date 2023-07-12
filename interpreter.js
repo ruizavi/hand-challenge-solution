@@ -1,7 +1,13 @@
+//@ts-check
+
 class Interpreter {
   MAX_SIZE = 255;
   MIN_SIZE = 0;
 
+  /**
+   * Provides array of characters
+   * @param {string[]} input
+   */
   constructor(input) {
     this.input = input;
     this.inputPosition = 0;
