@@ -43,7 +43,7 @@ readStream.on("end", () => {
   const input = [...data];
   const interpreter = new Interpreter(input);
 
-  interpreter.init();
+  const result = interpreter.interpreter();
 
-  interpreter.showResult();
+  console.log(result);
 });
