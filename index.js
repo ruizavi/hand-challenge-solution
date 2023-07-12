@@ -16,86 +16,34 @@
 - As memory cells are bytes, from 0 to 255 value, if you decrease 0 you'll get  255, if you increment 255 you'll get 0.
 - Loops of 🤜 and 🤛 can be nested. 
 */
-const input = [
-  ..."👉👆👆👆👆👆👆👆👆🤜👇👈👆👆👆👆👆👆👆👆👆👉🤛👈👊👉👉👆👉👇🤜👆🤛👆👆👉👆👆👉👆👆👆🤜👉🤜👇👉👆👆👆👈👈👆👆👆👉🤛👈👈🤛👉👇👇👇👇👇👊👉👇👉👆👆👆👊👊👆👆👆👊👉👇👊👈👈👆🤜👉🤜👆👉👆🤛👉👉🤛👈👇👇👇👇👇👇👇👇👇👇👇👇👇👇👊👉👉👊👆👆👆👊👇👇👇👇👇👇👊👇👇👇👇👇👇👇👇👊👉👆👊👉👆👊",
-];
-let inputPosition = 0;
+import fs from "fs";
+import Interpreter from "./interpreter.js";
 
-const cell = [0];
-let cellPosition = 0;
+const fileName = process.argv[2];
 
-const result = [];
-
-// Variables
-const MAX_SIZE = 255;
-const MIN_SIZE = 0;
-
-function nextCell() {
-  cellPosition += 1;
-
-  if (cellPosition >= cell.length) {
-    cell.push(0);
-  }
+if (!fileName) {
+  console.error("Debe proporcionar un nombre de archivo como argumento");
+  process.exit(1);
 }
 
-function previousCell() {
-  cellPosition -= 1;
-}
+const readStream = fs.createReadStream(fileName, "utf8");
 
-function incrementCell() {
-  cell[cellPosition] =
-    cell[cellPosition] === MAX_SIZE ? MIN_SIZE : (cell[cellPosition] += 1);
-}
+let data = "";
 
-function decreaseCell() {
-  cell[cellPosition] =
-    cell[cellPosition] === MIN_SIZE ? MAX_SIZE : (cell[cellPosition] -= 1);
-}
-
-function startLoop() {
-  if (cell[cellPosition] === 0) {
-    inputPosition = loop[inputPosition];
-  }
-}
-
-function endLoop() {
-  if (cell[cellPosition] !== 0) {
-    inputPosition = loop[inputPosition];
-  }
-}
-
-function displayChar() {
-  result.push(String.fromCharCode(cell[cellPosition]));
-}
-
-const stack = [];
-const loop = {};
-
-input.forEach((c, i) => {
-  if (c === "🤜") {
-    stack.push(i);
-  }
-
-  if (c === "🤛") {
-    const start = stack.pop();
-
-    loop[start] = i;
-    loop[i] = start;
-  }
+readStream.on("data", (chunk) => {
+  data += chunk;
 });
 
-const eventKeyword = {
-  "🤜": startLoop,
-  "🤛": endLoop,
-  "👉": nextCell,
-  "👆": incrementCell,
-  "👈": previousCell,
-  "👊": displayChar,
-  "👇": decreaseCell,
-};
+readStream.on("error", (err) => {
+  console.error("Error al leer el archivo:", err);
+  process.exit(1);
+});
 
-for (inputPosition; inputPosition < input.length; inputPosition++) {
-  eventKeyword[input[inputPosition]]();
-}
+readStream.on("end", () => {
+  const input = [...data];
+  const interpreter = new Interpreter(input);
 
-console.log(result.join(""));
+  interpreter.init();
+
+  interpreter.showResult();
+});
